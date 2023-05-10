@@ -74,6 +74,7 @@ def main():
         .set_id('leather_block')
         .set_display_name("Leather Block")
         .set_category(CreativeCategory.NATURE)
+        .set_hardness(1.5)
     )
     
     manager.generate()

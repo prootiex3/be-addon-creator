@@ -1,4 +1,5 @@
 import pathlib, json, uuid, shutil, enum
+from typing import Union
 from util import error, OUT_DIRECTORY
 
 DEBUG = True
@@ -108,6 +109,12 @@ class Item:
             
         return data
     
+class RenderMethod(enum.Enum):
+    BLEND = 'blend'
+    OPAQUE = 'opaque'
+    TRANSPARENT = 'alpha_test'
+    
+    
 class Block:
     '''
         A minecraft bedrock block
@@ -115,11 +122,17 @@ class Block:
     id: str
     display_name: str
     category: CreativeCategory
+    hardness: int
+    resistance: int
+    render_method: RenderMethod
     
     def __init__(self) -> None:
         self.id = "placeholder"
         self.display_name = "Placeholder"
         self.category = CreativeCategory.CONSTRUCTION
+        self.hardness = 1
+        self.resistance = 1
+        self.render_method = RenderMethod.BLEND
         
     def set_id(self, block_id: str):
         '''
@@ -142,6 +155,27 @@ class Block:
         self.category = category
         return self
     
+    def set_hardness(self, hardness: int):
+        '''
+            Sets the blocks hardness (how long it takes to break in seconds)
+        '''
+        self.hardness = hardness
+        return self
+    
+    def set_resistance(self, resistance: int):
+        '''
+            Sets the blocks resistance (how much of a chance it will break from a explosion)
+        '''
+        self.resistance = resistance
+        return self
+    
+    def set_render_method(self, render_method: RenderMethod):
+        '''
+            Sets the blocks rendering method (how it looks ingame, like if its transparent or opaque, etc..)
+        '''
+        self.render_method = render_method
+        return self
+
     def construct(self, namespace: str) -> dict:
         '''
             Returns the block json used inside a behaviour pack
@@ -151,9 +185,25 @@ class Block:
             "minecraft:block": {
                 "description": {
                     "identifier": f"{namespace}:{self.id}",
-                    "category": self.category.value,
+                    "register_to_creative_menu": True,
+                    "menu_category": {
+                        "category": self.category.value,
+                    }
                 },
-                "components": {}
+                "components": {
+                    "minecraft:material_instances": {
+                        "*": {
+                            "texture": f"{namespace}:{self.id}",
+                            "render_method": self.render_method.value,
+                        }
+                    },    
+                    "minecraft:destructible_by_mining": {
+                        "seconds_to_destroy": self.hardness
+                    },
+                    "minecraft:destructible_by_explosion": {
+                        "explosion_resistance": self.resistance
+                    }
+                }
             }
         }
         
@@ -430,7 +480,7 @@ class AddonManager:
     def __generate_blocks(self):
         for block in self.blocks:
             self.__write_to_lang(
-                key=f"block.{self.namespace}:{block.id}.name", value=block.display_name
+                key=f"tile.{self.namespace}:{block.id}.name", value=block.display_name
             )
             self.__write_block_texture(block_id=block.id)
             block_path = self.__ensure_file_or_folder_exists(
