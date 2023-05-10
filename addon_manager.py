@@ -2,6 +2,14 @@ import pathlib, json, uuid, shutil
 from util import error, OUT_DIRECTORY
 from enum import Enum
 
+DEBUG = True
+
+
+def debug(message: str):
+    if DEBUG:
+        print(f"DEBUG: {message}")
+
+
 # TODO: maybe make these editable?
 FORMAT_VERSION = 2
 FORMAT_VERSION_ITEM_BLOCK = "1.16.100"
@@ -90,7 +98,7 @@ class AddonManager:
         return path
 
     def __setup_behaviour_manifest(self, resource_manifest) -> dict:
-        print("Setting up behaviour manifest")
+        debug("Setting up behaviour manifest")
 
         manifest_path = self.__ensure_file_or_folder_exists(
             path=self.behaviour_path.joinpath("manifest.json")
@@ -124,7 +132,7 @@ class AddonManager:
         return manifest
 
     def __setup_resources_manifest(self) -> dict:
-        print("Setting up resources manifest")
+        debug("Setting up resources manifest")
 
         manifest_path = self.__ensure_file_or_folder_exists(
             path=self.resource_path.joinpath("manifest.json")
@@ -154,7 +162,7 @@ class AddonManager:
     def __real_initalize(self):
         rp_manifest = self.__setup_resources_manifest()
         bhp_manifest = self.__setup_behaviour_manifest(rp_manifest)
-        print("Finished initalizing\n")
+        debug("Finished initalizing\n")
 
     def clean(self):
         shutil.rmtree(self.main_directory)
@@ -163,7 +171,7 @@ class AddonManager:
     def __write_to_lang(self, key: str, value: str):
         # TODO: other languages?
         default_lang = "en_US"
-        print(f"Writing '{key}' to language {default_lang} with value '{value}'")
+        debug(f"Writing '{key}' to language {default_lang} with value '{value}'")
         lang_path = self.__ensure_file_or_folder_exists(
             path=self.resource_path.joinpath("texts"), is_folder=True
         )
@@ -183,12 +191,17 @@ class AddonManager:
             parsed["texture_data"][name] = {"textures": f"textures/items/{id}"}
             item_texture_json_path.write_text(json.dumps(parsed, indent=4))
         except:
-            item_texture_json_path.write_text(json.dumps({
-                "texture_data": {name: {"textures": f"textures/items/{id}"}},
-            }, indent=4))
+            item_texture_json_path.write_text(
+                json.dumps(
+                    {
+                        "texture_data": {name: {"textures": f"textures/items/{id}"}},
+                    },
+                    indent=4,
+                )
+            )
 
     def add_item(self, item: Item):
-        print(f"Creating item with id '{item.id}'")
+        debug(f"Creating item with id '{item.id}'")
 
         item_behaviour_path = self.__ensure_file_or_folder_exists(
             path=self.behaviour_path.joinpath("items"), is_folder=True
@@ -202,7 +215,7 @@ class AddonManager:
         )
         self.__write_item_texture(id=item.id)
 
-        print(f"Make sure to provide the texture for item with id '{item.id}'\n")
+        debug(f"Make sure to provide the texture for item with id '{item.id}'\n")
         item_path = self.__ensure_file_or_folder_exists(
             path=item_behaviour_path.joinpath(f"{item.id}.json")
         )
