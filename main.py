@@ -1,6 +1,6 @@
 import json
 import pathlib
-from addon_manager import AddonManager, Item, CreativeCategory
+from addon_manager import AddonManager, Item, Block, CreativeCategory
 from util import error, OUT_DIRECTORY
 
 def main():  
@@ -32,7 +32,6 @@ def main():
             print("Failed to use defaults, using local defaults instead...\n")
 
     manager = AddonManager(name, description)
-    manager.initalize()
 
     manager.add_item(
         item=Item()
@@ -70,7 +69,15 @@ def main():
         .set_food(3)
     )
     
-    print('Finished!')
+    manager.add_block(
+        block=Block()
+        .set_id('leather_block')
+        .set_display_name("Leather Block")
+        .set_category(CreativeCategory.NATURE)
+    )
+    
+    manager.generate()
+    print('\nFinished!')
 
 
 if __name__ == "__main__":

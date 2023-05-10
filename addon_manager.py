@@ -85,7 +85,7 @@ class Item:
         '''
             Returns the item json used inside a behaviour pack
         '''
-        item_data = {
+        data = {
             "format_version": FORMAT_VERSION_ITEM_BLOCK,
             "minecraft:item": {
                 "description": {
@@ -101,12 +101,75 @@ class Item:
         }
 
         if self.is_food:
-            item_data["minecraft:item"]["components"]["minecraft:use_duration"] = 32
-            item_data["minecraft:item"]["components"]["minecraft:food"] = {
+            data["minecraft:item"]["components"]["minecraft:use_duration"] = 32
+            data["minecraft:item"]["components"]["minecraft:food"] = {
                 "nutrition": self.food_bars
             }
             
-        return item_data
+        return data
+    
+class Block:
+    '''
+        A minecraft bedrock block
+    '''
+    id: str
+    display_name: str
+    category: CreativeCategory
+    
+    def __init__(self) -> None:
+        self.id = "placeholder"
+        self.display_name = "Placeholder"
+        self.category = CreativeCategory.CONSTRUCTION
+        
+    def set_id(self, block_id: str):
+        '''
+            Sets the blocks id
+        '''
+        self.id = block_id
+        return self
+
+    def set_display_name(self, display_name: str):
+        '''
+            Sets the blocks display name
+        '''
+        self.display_name = display_name
+        return self
+
+    def set_category(self, category: CreativeCategory):
+        '''
+            Sets the blocks creative tab/category
+        '''
+        self.category = category
+        return self
+    
+    def construct(self, namespace: str) -> dict:
+        '''
+            Returns the block json used inside a behaviour pack
+        '''
+        data = {
+            "format_version": FORMAT_VERSION_ITEM_BLOCK,
+            "minecraft:block": {
+                "description": {
+                    "identifier": f"{namespace}:{self.id}",
+                    "category": self.category.value,
+                },
+                "components": {}
+            }
+        }
+        
+        return data
+
+class Recipe:
+    '''
+        A minecraft bedrock recipe
+    '''
+    pass
+
+class Entity:
+    '''
+        A minecraft bedrock entity
+    '''
+    pass
 
 class AddonManager:
     '''
@@ -122,10 +185,7 @@ class AddonManager:
         self.description = description
 
         technical_name = "_".join(self.name.lower().split(" "))
-        if namespace is None:
-            self.namespace = technical_name
-        else:
-            self.namespace = namespace
+        self.namespace = technical_name if namespace is None else namespace
 
         self.behaviour_path = self.__ensure_file_or_folder_exists(
             path=OUT_DIRECTORY.joinpath(f"{technical_name}_behaviour"), is_folder=True
@@ -133,6 +193,27 @@ class AddonManager:
         self.resource_path = self.__ensure_file_or_folder_exists(
             path=OUT_DIRECTORY.joinpath(f"{technical_name}_resources"), is_folder=True
         )
+        
+        self.items_behaviour_path = self.__ensure_file_or_folder_exists(
+            path=self.behaviour_path.joinpath("items"), is_folder=True
+        )
+        self.items_resources_path = self.__ensure_file_or_folder_exists(
+            path=self.resource_path.joinpath("textures/items"), is_folder=True
+        )
+        
+        self.blocks_behaviour_path = self.__ensure_file_or_folder_exists(
+            path=self.behaviour_path.joinpath("blocks"), is_folder=True
+        )
+        self.blocks_resources_path = self.__ensure_file_or_folder_exists(
+            path=self.resource_path.joinpath("textures/blocks"), is_folder=True
+        )
+        
+        self.items: list[Item] = []
+        self.blocks: list[Block] = []
+        self.recipes: list[Recipe] = []
+        self.entities: list[Entity] = []
+        
+        self.initalize()
 
     def __ensure_file_or_folder_exists(
         self, path: pathlib.Path, is_folder: bool = False
@@ -215,17 +296,9 @@ class AddonManager:
         manifest_path.write_text(json.dumps(manifest, indent=4))
         return manifest
 
-    def __real_initalize(self):
-        '''
-            dev real initalize
-        '''
-        rp_manifest = self.__setup_resources_manifest()
-        self.__setup_behaviour_manifest(rp_manifest)
-        debug("Finished initalizing\n")
-
     def clean(self):
         '''
-            reset/clear out folder
+            reset/clear the contents in the out folder
         '''
         shutil.rmtree(self.main_directory)
         self.main_directory.mkdir()
@@ -250,51 +323,74 @@ class AddonManager:
         '''
             Write the item (item_id) texture to textures/item_texture.json
         '''
-        item_texture_json_path = self.__ensure_file_or_folder_exists(
+        item_textures_json_path = self.__ensure_file_or_folder_exists(
             path=self.resource_path.joinpath("textures/item_texture.json"),
         )
         name = f"{self.namespace}:{item_id}"
         try:
-            parsed = json.loads(item_texture_json_path.read_text())
+            parsed = json.loads(item_textures_json_path.read_text())
             parsed["texture_data"][name] = {"textures": f"textures/items/{item_id}"}
-            item_texture_json_path.write_text(json.dumps(parsed, indent=4))
+            item_textures_json_path.write_text(json.dumps(parsed, indent=4))
         except:
-            item_texture_json_path.write_text(
+            item_textures_json_path.write_text(
                 json.dumps(
                     {
+                        "texture_name": "atlas.items",
                         "texture_data": {name: {"textures": f"textures/items/{item_id}"}},
                     },
                     indent=4,
                 )
             )
+        debug(f"Make sure to provide the texture for item with id '{item_id}'")
+    
+    def __write_block_texture(self, block_id: str):
+        '''
+            Write the block (block_id) texture to textures/terrain_texture.json
+        '''
+        block_textures_json_path = self.__ensure_file_or_folder_exists(
+            path=self.resource_path.joinpath("textures/terrain_texture.json"),
+        )
+        name = f"{self.namespace}:{block_id}"
+        try:
+            parsed = json.loads(block_textures_json_path.read_text())
+            parsed["texture_data"][name] = {"textures": f"textures/blocks/{block_id}"}
+            block_textures_json_path.write_text(json.dumps(parsed, indent=4))
+        except:
+            block_textures_json_path.write_text(
+                json.dumps(
+                    {
+                        "texture_name": "atlas.terrain",
+                        "padding": 8,
+                        "num_mip_levels": 4,
+                        "texture_data": {name: {"textures": f"textures/blocks/{block_id}"}},
+                    },
+                    indent=4,
+                )
+            )
+        debug(f"Make sure to provide the texture for block with id '{block_id}'")
 
     def add_item(self, item: Item):
         '''
             Add a custom item to the addon using the Item class
         '''
-        debug(f"Creating item with id '{item.id}'")
+        debug(f"Adding item with id '{item.id}'")
+        index = len(self.items)
+        self.items.append(item)
+        return index
+    
+    def add_block(self, block: Block):
+        '''
+            Add a custom block to the addon using the Block class
+        '''
+        debug(f"Adding block with id '{block.id}'")
+        index = len(self.blocks)
+        self.blocks.append(block)
+        return index
 
-        item_behaviour_path = self.__ensure_file_or_folder_exists(
-            path=self.behaviour_path.joinpath("items"), is_folder=True
-        )
-        item_resources_path = self.__ensure_file_or_folder_exists(
-            path=self.resource_path.joinpath("textures/items"), is_folder=True
-        )
-
-        self.__write_to_lang(
-            key=f"item.{self.namespace}:{item.id}.name", value=item.display_name
-        )
-        self.__write_item_texture(item_id=item.id)
-
-        debug(f"Make sure to provide the texture for item with id '{item.id}'\n")
-        item_path = self.__ensure_file_or_folder_exists(
-            path=item_behaviour_path.joinpath(f"{item.id}.json")
-        )
-
-        item_data = item.construct(namespace=self.namespace)
-
-        item_path.write_text(json.dumps(item_data, indent=4))
-        return item_data
+    def __real_initalize(self):
+        rp_manifest = self.__setup_resources_manifest()
+        self.__setup_behaviour_manifest(rp_manifest)
+        debug("Finished initalizing\n")
 
     def initalize(self):
         '''
@@ -304,3 +400,31 @@ class AddonManager:
             self.__real_initalize()
         except Exception as err:
             error(f"Failed to initalize AddonManager: {err}")
+
+    def __generate_items(self):
+        for item in self.items:
+            self.__write_to_lang(
+                key=f"item.{self.namespace}:{item.id}.name", value=item.display_name
+            )
+            self.__write_item_texture(item_id=item.id)
+            item_path = self.__ensure_file_or_folder_exists(
+                path=self.items_behaviour_path.joinpath(f"{item.id}.json")
+            )
+            item_data = item.construct(namespace=self.namespace)
+            item_path.write_text(json.dumps(item_data, indent=4))
+
+    def __generate_blocks(self):
+        for block in self.blocks:
+            self.__write_to_lang(
+                key=f"block.{self.namespace}:{block.id}.name", value=block.display_name
+            )
+            self.__write_block_texture(block_id=block.id)
+            block_path = self.__ensure_file_or_folder_exists(
+                path=self.blocks_behaviour_path.joinpath(f"{block.id}.json")
+            )
+            block_data = block.construct(namespace=self.namespace)
+            block_path.write_text(json.dumps(block_data, indent=4))
+
+    def generate(self):
+        self.__generate_items()
+        self.__generate_blocks()
