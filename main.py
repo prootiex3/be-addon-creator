@@ -1,5 +1,5 @@
 import pathlib, json, os
-from addon_manager import AddonManager, ItemBuilder
+from addon_manager import AddonManager, Item
 from util import error, OUT_DIRECTORY
 
 
@@ -31,11 +31,38 @@ def main():
             print(f"Failed to use defaults, using local defaults instead...")
     manager = AddonManager(name, description)
     manager.initalize()
-    manager.add_item(id="pie", display_name="Pie", stack_size=64)
-    manager.add_item(id="pizza", display_name="Pizza", stack_size=4)
-    manager.add_item(id="ice_cream", display_name="Ice Cream", stack_size=2)
-    manager.add_item(id="fanta", display_name="Fanta", stack_size=1)
-    # manager.add_item(ItemBuilder()
+
+    manager.add_item(
+        item=Item()
+        .set_id("pie")
+        .set_display_name("Pie")
+        .set_max_stack_size(64)
+        .set_food(10)
+    )
+
+    manager.add_item(
+        item=Item()
+        .set_id("pizza")
+        .set_display_name("Pizza")
+        .set_max_stack_size(4)
+        .set_food(4)
+    )
+
+    manager.add_item(
+        item=Item()
+        .set_id("ice_cream")
+        .set_display_name("Ice Cream")
+        .set_max_stack_size(2)
+        .set_food(1)
+    )
+
+    manager.add_item(
+        item=Item()
+        .set_id("fanta")
+        .set_display_name("Fanta")
+        .set_max_stack_size(1)
+        .set_food(3)
+    )
 
 
 if __name__ == "__main__":
