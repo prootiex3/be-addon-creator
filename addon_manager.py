@@ -163,13 +163,27 @@ class Recipe:
     '''
         A minecraft bedrock recipe
     '''
-    pass
+    def __init__(self) -> None:
+        pass
+    
+    def construct(self, namespace: str) -> dict:
+        '''
+            Returns the recipe json used inside a behaviour pack
+        '''
+        pass
 
 class Entity:
     '''
         A minecraft bedrock entity
     '''
-    pass
+    def __init__(self) -> None:
+        pass
+    
+    def construct(self, namespace: str) -> dict:
+        '''
+            Returns the entity json used inside a behaviour pack
+        '''
+        pass
 
 class AddonManager:
     '''
