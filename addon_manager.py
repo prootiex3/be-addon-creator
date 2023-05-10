@@ -197,7 +197,7 @@ class AddonManager:
                 },
                 "components": {
                     "max_stack_size": item.max_stack_size,
-                    "minecraft:icon": {"value": item.id},
+                    "minecraft:icon": {"texture": item.id},
                 },
             },
         }
