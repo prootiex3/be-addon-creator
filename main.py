@@ -27,9 +27,9 @@ def main():
             parsed = dict(json.loads(s=defaults_path.read_text(encoding='utf-8')))
             name = parsed.get("name", name)
             description = parsed.get("description", description)
-            print("Failed to use defaults, using local defaults instead...")
+            print("Failed to use defaults, using local defaults instead...\n")
         except:
-            print("Failed to use defaults, using local defaults instead...")
+            print("Failed to use defaults, using local defaults instead...\n")
 
     manager = AddonManager(name, description)
     manager.initalize()
@@ -69,6 +69,8 @@ def main():
         .set_max_stack_size(1)
         .set_food(3)
     )
+    
+    print('Finished!')
 
 
 if __name__ == "__main__":
