@@ -191,6 +191,7 @@ class Block:
                     }
                 },
                 "components": {
+                    "minecraft:display_name": self.display_name,
                     "minecraft:material_instances": {
                         "*": {
                             "texture": f"{namespace}:{self.id}",
