@@ -1,9 +1,9 @@
-import pathlib, json, os
+import json
+import pathlib
 from addon_manager import AddonManager, Item, CreativeCategory
 from util import error, OUT_DIRECTORY
 
-
-def main():
+def main():  
     if not OUT_DIRECTORY.exists():
         print("'./out' doesn't exist, creating it...")
         OUT_DIRECTORY.mkdir()
@@ -24,11 +24,12 @@ def main():
         name = "Template Addon"
         description = "A bedrock addon created using sammwi's AddonManager!"
         try:
-            parsed = dict(json.loads(s=defaults_path.read_text()))
+            parsed = dict(json.loads(s=defaults_path.read_text(encoding='utf-8')))
             name = parsed.get("name", name)
             description = parsed.get("description", description)
+            print("Failed to use defaults, using local defaults instead...")
         except:
-            print(f"Failed to use defaults, using local defaults instead...")
+            print("Failed to use defaults, using local defaults instead...")
 
     manager = AddonManager(name, description)
     manager.initalize()

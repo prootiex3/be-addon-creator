@@ -3,12 +3,9 @@ from util import error, OUT_DIRECTORY
 from enum import Enum
 
 DEBUG = True
-
-
 def debug(message: str):
     if DEBUG:
         print(f"DEBUG: {message}")
-
 
 # TODO: maybe make these editable?
 FORMAT_VERSION = 2
@@ -16,13 +13,11 @@ FORMAT_VERSION_ITEM_BLOCK = "1.16.100"
 MIN_ENGINE_VERSION = [1, 16, 0]
 GLOBAL_VERSION = [1, 0, 0]
 
-
 class CreativeCategory(Enum):
     Construction = "Construction"
     Equipment = "Equipment"
     Items = "Items"
     Nature = "Nature"
-
 
 class Item:
     id: str
@@ -62,7 +57,6 @@ class Item:
         self.is_food = True
         self.food_bars = bars
         return self
-
 
 class AddonManager:
     def __init__(
