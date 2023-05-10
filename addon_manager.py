@@ -426,5 +426,8 @@ class AddonManager:
             block_path.write_text(json.dumps(block_data, indent=4))
 
     def generate(self):
+        '''
+            Generate the files for the addon like items, blocks, recipes, etc...
+        '''
         self.__generate_items()
         self.__generate_blocks()
