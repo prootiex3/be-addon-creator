@@ -1,9 +1,11 @@
-import pathlib, json, uuid, shutil
+import pathlib, json, uuid, shutil, enum
 from util import error, OUT_DIRECTORY
-from enum import Enum
 
 DEBUG = True
 def debug(message: str):
+    '''
+        DEBUG
+    '''
     if DEBUG:
         print(f"DEBUG: {message}")
 
@@ -13,13 +15,19 @@ FORMAT_VERSION_ITEM_BLOCK = "1.16.100"
 MIN_ENGINE_VERSION = [1, 16, 0]
 GLOBAL_VERSION = [1, 0, 0]
 
-class CreativeCategory(Enum):
-    Construction = "Construction"
-    Equipment = "Equipment"
-    Items = "Items"
-    Nature = "Nature"
+class CreativeCategory(enum.Enum):
+    '''
+        A enum consisting of the Bedrock Edition creative tabs
+    '''
+    CONSTRUCTION = "Construction"
+    EQUIPMENT = "Equipment"
+    ITEMS = "Items"
+    NATURE = "Nature"
 
 class Item:
+    '''
+        A minecraft bedrock item
+    '''
     id: str
     display_name: str
     category: CreativeCategory
@@ -31,34 +39,79 @@ class Item:
     def __init__(self) -> None:
         self.id = "placeholder"
         self.display_name = "Placeholder"
-        self.category = CreativeCategory.Construction
+        self.category = CreativeCategory.CONSTRUCTION
         self.max_stack_size = 64
 
         self.is_food = False
         self.food_bars = 0
 
-    def set_id(self, id: str):
-        self.id = id
+    def set_id(self, item_id: str):
+        '''
+            Sets the items id
+        '''
+        self.id = item_id
         return self
 
     def set_display_name(self, display_name: str):
+        '''
+            Sets the items display name
+        '''
         self.display_name = display_name
         return self
 
     def set_category(self, category: CreativeCategory):
+        '''
+            Sets the items creative tab/category
+        '''
         self.category = category
         return self
 
     def set_max_stack_size(self, max_stack_size: int):
+        '''
+            Set the max number the item can stack to
+        '''
         self.max_stack_size = max_stack_size
         return self
 
     def set_food(self, bars: int):
+        '''
+            Sets is_food on the item and sets the value for the food consumption (food_bars)
+        '''
         self.is_food = True
         self.food_bars = bars
         return self
+    
+    def construct(self, namespace: str) -> dict:
+        '''
+            Returns the item json used inside a behaviour pack
+        '''
+        item_data = {
+            "format_version": FORMAT_VERSION_ITEM_BLOCK,
+            "minecraft:item": {
+                "description": {
+                    "identifier": f"{namespace}:{self.id}",
+                    "category": self.category.value,
+                },
+                "components": {
+                    "minecraft:icon": {"texture": f"{namespace}:{self.id}"},
+                    "minecraft:display_name": {"value": self.display_name},
+                    "minecraft:max_stack_size": self.max_stack_size,
+                },
+            },
+        }
+
+        if self.is_food:
+            item_data["minecraft:item"]["components"]["minecraft:use_duration"] = 32
+            item_data["minecraft:item"]["components"]["minecraft:food"] = {
+                "nutrition": self.food_bars
+            }
+            
+        return item_data
 
 class AddonManager:
+    '''
+        Create Minecraft Bedrock Edition Addons using this class!
+    '''
     def __init__(
         self, name: str, description: str, namespace: str | None = None
     ) -> None:
@@ -84,6 +137,9 @@ class AddonManager:
     def __ensure_file_or_folder_exists(
         self, path: pathlib.Path, is_folder: bool = False
     ):
+        '''
+            Checks if the path exists, if not it creates it and its parents
+        '''
         if not path.exists():
             if is_folder:
                 path.mkdir(parents=True)
@@ -92,6 +148,9 @@ class AddonManager:
         return path
 
     def __setup_behaviour_manifest(self, resource_manifest) -> dict:
+        '''
+            Create and put the behaviour pack manifest into the addon
+        '''
         debug("Setting up behaviour manifest")
 
         manifest_path = self.__ensure_file_or_folder_exists(
@@ -126,6 +185,9 @@ class AddonManager:
         return manifest
 
     def __setup_resources_manifest(self) -> dict:
+        '''
+            Create and put the resource pack manifest into the addon
+        '''
         debug("Setting up resources manifest")
 
         manifest_path = self.__ensure_file_or_folder_exists(
@@ -154,15 +216,24 @@ class AddonManager:
         return manifest
 
     def __real_initalize(self):
+        '''
+            dev real initalize
+        '''
         rp_manifest = self.__setup_resources_manifest()
-        bhp_manifest = self.__setup_behaviour_manifest(rp_manifest)
+        self.__setup_behaviour_manifest(rp_manifest)
         debug("Finished initalizing\n")
 
     def clean(self):
+        '''
+            reset/clear out folder
+        '''
         shutil.rmtree(self.main_directory)
         self.main_directory.mkdir()
 
     def __write_to_lang(self, key: str, value: str):
+        '''
+            Write the item (id) display name to texts/(language).json
+        '''
         # TODO: other languages?
         default_lang = "en_US"
         debug(f"Writing '{key}' to language {default_lang} with value '{value}'")
@@ -175,26 +246,32 @@ class AddonManager:
         lang_text = lang_file_path.read_text().lstrip()
         lang_file_path.write_text(f"{lang_text}\n{key}={value}")
 
-    def __write_item_texture(self, id: str):
+    def __write_item_texture(self, item_id: str):
+        '''
+            Write the item (item_id) texture to textures/item_texture.json
+        '''
         item_texture_json_path = self.__ensure_file_or_folder_exists(
             path=self.resource_path.joinpath("textures/item_texture.json"),
         )
-        name = f"{self.namespace}:{id}"
+        name = f"{self.namespace}:{item_id}"
         try:
             parsed = json.loads(item_texture_json_path.read_text())
-            parsed["texture_data"][name] = {"textures": f"textures/items/{id}"}
+            parsed["texture_data"][name] = {"textures": f"textures/items/{item_id}"}
             item_texture_json_path.write_text(json.dumps(parsed, indent=4))
         except:
             item_texture_json_path.write_text(
                 json.dumps(
                     {
-                        "texture_data": {name: {"textures": f"textures/items/{id}"}},
+                        "texture_data": {name: {"textures": f"textures/items/{item_id}"}},
                     },
                     indent=4,
                 )
             )
 
     def add_item(self, item: Item):
+        '''
+            Add a custom item to the addon using the Item class
+        '''
         debug(f"Creating item with id '{item.id}'")
 
         item_behaviour_path = self.__ensure_file_or_folder_exists(
@@ -207,38 +284,22 @@ class AddonManager:
         self.__write_to_lang(
             key=f"item.{self.namespace}:{item.id}.name", value=item.display_name
         )
-        self.__write_item_texture(id=item.id)
+        self.__write_item_texture(item_id=item.id)
 
         debug(f"Make sure to provide the texture for item with id '{item.id}'\n")
         item_path = self.__ensure_file_or_folder_exists(
             path=item_behaviour_path.joinpath(f"{item.id}.json")
         )
 
-        item_data = {
-            "format_version": FORMAT_VERSION_ITEM_BLOCK,
-            "minecraft:item": {
-                "description": {
-                    "identifier": f"{self.namespace}:{item.id}",
-                    "category": item.category.value,
-                },
-                "components": {
-                    "minecraft:icon": {"texture": f"{self.namespace}:{item.id}"},
-                    "minecraft:display_name": {"value": item.display_name},
-                    "minecraft:max_stack_size": item.max_stack_size,
-                },
-            },
-        }
-
-        if item.is_food:
-            item_data["minecraft:item"]["components"]["minecraft:use_duration"] = 32
-            item_data["minecraft:item"]["components"]["minecraft:food"] = {
-                "nutrition": item.food_bars
-            }
+        item_data = item.construct(namespace=self.namespace)
 
         item_path.write_text(json.dumps(item_data, indent=4))
         return item_data
 
     def initalize(self):
+        '''
+            Initalize Addon Manager
+        '''
         try:
             self.__real_initalize()
         except Exception as err:
