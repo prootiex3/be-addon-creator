@@ -4,17 +4,16 @@ from enum import Enum
 
 # TODO: maybe make these editable?
 FORMAT_VERSION = 2
-FORMAT_VERSION_ITEM_BLOCK = "1.16.1"
-MIN_ENGINE_VERSION = [1, 19, 0]
+FORMAT_VERSION_ITEM_BLOCK = "1.16.100"
+MIN_ENGINE_VERSION = [1, 16, 0]
 GLOBAL_VERSION = [1, 0, 0]
 
 
 class CreativeCategory(Enum):
-    Commands = "commands"
-    Construction = "construction"
-    Equipment = "equipment"
-    Items = "items"
-    Nature = "nature"
+    Construction = "Construction"
+    Equipment = "Equipment"
+    Items = "Items"
+    Nature = "Nature"
 
 
 class Item:
@@ -58,7 +57,9 @@ class Item:
 
 
 class AddonManager:
-    def __init__(self, name: str, description: str) -> None:
+    def __init__(
+        self, name: str, description: str, namespace: str | None = None
+    ) -> None:
         self.main_directory = OUT_DIRECTORY
         self.clean()
 
@@ -66,7 +67,10 @@ class AddonManager:
         self.description = description
 
         technical_name = "_".join(self.name.lower().split(" "))
-        self.namespace = technical_name
+        if namespace is None:
+            self.namespace = technical_name
+        else:
+            self.namespace = namespace
 
         self.behaviour_path = self.__ensure_file_or_folder_exists(
             path=OUT_DIRECTORY.joinpath(f"{technical_name}_behaviour"), is_folder=True
@@ -94,7 +98,7 @@ class AddonManager:
         manifest = {
             "format_version": FORMAT_VERSION,
             "header": {
-                "name": f"{self.name} Resources",
+                "name": f"{self.name} Behaviour",
                 "description": self.description,
                 "uuid": str(uuid.uuid4()),
                 "version": GLOBAL_VERSION,
@@ -128,7 +132,7 @@ class AddonManager:
         manifest = {
             "format_version": FORMAT_VERSION,
             "header": {
-                "name": f"{self.name} Behaviours",
+                "name": f"{self.name} Resources",
                 "description": self.description,
                 "uuid": str(uuid.uuid4()),
                 "version": GLOBAL_VERSION,
@@ -156,7 +160,7 @@ class AddonManager:
         shutil.rmtree(self.main_directory)
         self.main_directory.mkdir()
 
-    def write_to_lang(self, key: str, value: str):
+    def __write_to_lang(self, key: str, value: str):
         # TODO: other languages?
         default_lang = "en_US"
         print(f"Writing '{key}' to language {default_lang} with value '{value}'")
@@ -169,6 +173,20 @@ class AddonManager:
         lang_text = lang_file_path.read_text().lstrip()
         lang_file_path.write_text(f"{lang_text}\n{key}={value}")
 
+    def __write_item_texture(self, id: str):
+        item_texture_json_path = self.__ensure_file_or_folder_exists(
+            path=self.resource_path.joinpath("textures/item_texture.json"),
+        )
+        name = f"{self.namespace}:{id}"
+        try:
+            parsed = json.loads(item_texture_json_path.read_text())
+            parsed["texture_data"][name] = {"textures": f"textures/items/{id}"}
+            item_texture_json_path.write_text(json.dumps(parsed, indent=4))
+        except:
+            item_texture_json_path.write_text(json.dumps({
+                "texture_data": {name: {"textures": f"textures/items/{id}"}},
+            }, indent=4))
+
     def add_item(self, item: Item):
         print(f"Creating item with id '{item.id}'")
 
@@ -179,9 +197,10 @@ class AddonManager:
             path=self.resource_path.joinpath("textures/items"), is_folder=True
         )
 
-        self.write_to_lang(
+        self.__write_to_lang(
             key=f"item.{self.namespace}:{item.id}.name", value=item.display_name
         )
+        self.__write_item_texture(id=item.id)
 
         print(f"Make sure to provide the texture for item with id '{item.id}'\n")
         item_path = self.__ensure_file_or_folder_exists(
@@ -196,8 +215,9 @@ class AddonManager:
                     "category": item.category.value,
                 },
                 "components": {
-                    "max_stack_size": item.max_stack_size,
-                    "minecraft:icon": {"texture": item.id},
+                    "minecraft:icon": {"texture": f"{self.namespace}:{item.id}"},
+                    "minecraft:display_name": {"value": item.display_name},
+                    "minecraft:max_stack_size": item.max_stack_size,
                 },
             },
         }

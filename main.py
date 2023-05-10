@@ -1,5 +1,5 @@
 import pathlib, json, os
-from addon_manager import AddonManager, Item
+from addon_manager import AddonManager, Item, CreativeCategory
 from util import error, OUT_DIRECTORY
 
 
@@ -24,11 +24,12 @@ def main():
         name = "Template Addon"
         description = "A bedrock addon created using sammwi's AddonManager!"
         try:
-            parsed = dict(json.loads(defaults_path.read_text()))
+            parsed = dict(json.loads(s=defaults_path.read_text()))
             name = parsed.get("name", name)
             description = parsed.get("description", description)
         except:
             print(f"Failed to use defaults, using local defaults instead...")
+
     manager = AddonManager(name, description)
     manager.initalize()
 
@@ -36,7 +37,8 @@ def main():
         item=Item()
         .set_id("pie")
         .set_display_name("Pie")
-        .set_max_stack_size(64)
+        .set_category(CreativeCategory.Nature)
+        .set_max_stack_size(5)
         .set_food(10)
     )
 
@@ -44,6 +46,7 @@ def main():
         item=Item()
         .set_id("pizza")
         .set_display_name("Pizza")
+        .set_category(CreativeCategory.Nature)
         .set_max_stack_size(4)
         .set_food(4)
     )
@@ -52,6 +55,7 @@ def main():
         item=Item()
         .set_id("ice_cream")
         .set_display_name("Ice Cream")
+        .set_category(CreativeCategory.Nature)
         .set_max_stack_size(2)
         .set_food(1)
     )
@@ -60,6 +64,7 @@ def main():
         item=Item()
         .set_id("fanta")
         .set_display_name("Fanta")
+        .set_category(CreativeCategory.Nature)
         .set_max_stack_size(1)
         .set_food(3)
     )
