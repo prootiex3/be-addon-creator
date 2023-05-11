@@ -1,4 +1,4 @@
-import pathlib, json, uuid, shutil, enum, json_fix
+import pathlib, json, uuid, shutil, enum
 from util import error, OUT_DIRECTORY
 
 DEBUG = True
@@ -115,9 +115,9 @@ class CreativeCategory(enum.Enum):
     NATURE = "Nature"
 
 
-class RecipeShaped:
+class CraftingRecipeShaped:
     """
-    A minecraft bedrock shaped recipe
+    A minecraft bedrock shaped crafting recipe
     """
 
     item_id: str
@@ -165,13 +165,13 @@ class RecipeIngredient:
         self.item_id = item_id
         self.count = count
 
-    def __json__(self):
-        return self.__dict__
+    def construct(self) -> dict:
+        return {"item": self.item_id, "count": self.count}
 
 
-class RecipeShapeless:
+class CraftingRecipeShapeless:
     """
-    A minecraft bedrock shapeless recipe
+    A minecraft bedrock shapeless crafting recipe
     """
 
     item_id: str
@@ -198,8 +198,10 @@ class RecipeShapeless:
             "minecraft:recipe_shapeless": {
                 "description": {"identifier": f"{namespace}:{self.item_id}"},
                 "tags": ["crafting_table"],
-                "ingredients": self.ingredients,
-                "result": f"{namespace}:{self.item_id}",
+                "ingredients": [
+                    ingredient.construct() for ingredient in self.ingredients
+                ],
+                "result": {"item": f"{namespace}:{self.item_id}"},
             },
         }
 
@@ -218,7 +220,7 @@ class Item:
     is_food: bool
     food_bars: int
 
-    recipe: RecipeShaped | RecipeShapeless | None
+    recipe: CraftingRecipeShaped | CraftingRecipeShapeless | None
 
     def __init__(self) -> None:
         self.id = "placeholder"
@@ -275,7 +277,7 @@ class Item:
         self.food_bars = bars
         return self
 
-    def set_recipe(self, recipe: RecipeShaped | RecipeShapeless):
+    def set_recipe(self, recipe: CraftingRecipeShaped | CraftingRecipeShapeless):
         """
         Sets the recipe for the item
         """
@@ -332,7 +334,7 @@ class Block:
     resistance: int
     render_method: RenderMethod
 
-    recipe: RecipeShaped | RecipeShapeless | None
+    recipe: CraftingRecipeShaped | CraftingRecipeShapeless | None
 
     def __init__(self) -> None:
         self.id = "placeholder"
@@ -403,7 +405,7 @@ class Block:
         self.render_method = render_method
         return self
 
-    def set_recipe(self, recipe: RecipeShaped | RecipeShapeless):
+    def set_recipe(self, recipe: CraftingRecipeShaped | CraftingRecipeShapeless):
         """
         Sets the recipe for the block
         """
@@ -733,7 +735,9 @@ class AddonManager:
         except Exception as err:
             error(f"Failed to initalize AddonManager: {err}")
 
-    def __generate_recipe(self, recipe: RecipeShaped | RecipeShapeless | None):
+    def __generate_recipe(
+        self, recipe: CraftingRecipeShaped | CraftingRecipeShapeless | None
+    ):
         if recipe is None:
             return
         recipe_json_path = self.__ensure_file_or_folder_exists(
