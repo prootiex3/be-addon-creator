@@ -22,6 +22,8 @@ MIN_ENGINE_VERSION = [1, 19, 0]
 GLOBAL_VERSION = [1, 0, 0]
 
 
+# https://wiki.bedrock.dev/blocks/block-sounds.html
+# Last updated for 1.19.80
 class BlockSounds(enum.Enum):
     AMETHYST_BLOCK = "amethyst_block"
     AMETHYST_CLUSTER = "amethyst_cluster"
