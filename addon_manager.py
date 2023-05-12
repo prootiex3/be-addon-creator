@@ -603,6 +603,46 @@ class Block:
 
         return data
 
+# https://bedrock.dev/docs/stable/Entities#Biome%20Tags
+class BiomeTags(enum.Enum):
+    ANIMAL = "animal"
+    BEACH = "beach"
+    BIRCH = "birch"
+    COLD = "cold"
+    DARK_OAK = "dark_oak"
+    DEEP = "deep"
+    DESERT = "desert"
+    EGE = "edge"
+    EXTREME_HILLS = "extreme_hills"
+    FLOWER_FOREST = "flower_forest"
+    FOREST = "forest"
+    FROZEN = "frozen"
+    HILLS = "hills"
+    ICE = "ice"
+    ICE_PLAINS = "ice_plains"
+    JUNGLE = "jungle"
+    LAKES = "lakes"
+    LUKEWARN = "lukewarm"
+    MEGA = "mega"
+    MESA = "mesa"
+    MONSTER = "monster"
+    MOOSHROOM_ISLAND = "mooshroom_island"
+    MOUNTAIN = "mountain"
+    MUTATED = "mutated"
+    NETHER = "nether"
+    OCEAN = "ocean"
+    PLAINS = "plains"
+    PLATEAU = "plateau"
+    RIVER = "river"
+    ROOFED = "roofed"
+    SAVANNA = "savanna"
+    SHORE = "shore"
+    STONE = "stone"
+    SWAMP = "swamp"
+    TAIGA = "taiga"
+    THE_END = "the_end"
+    WARM = "warm"
+
 # https://bedrock.dev/docs/stable/Entities
 class Entity:
     """
@@ -615,6 +655,8 @@ class Entity:
     egg_texture_path: str | None
     egg_base_color: str
     egg_overlay_color: str
+    
+    can_wear_armor: bool
 
     def __init__(self) -> None:
         self.id = ""
@@ -622,6 +664,7 @@ class Entity:
         self.egg_texture_path = None
         self.egg_base_color = "#"
         self.egg_overlay_color = "#"
+        self.can_wear_armor = True
         
     def set_id(self, entity_id: str):
         """
@@ -642,6 +685,10 @@ class Entity:
     def set_egg_overlay_color(self, hex_color: str):
         self.egg_overlay_color = hex_color
         return self
+    
+    def set_can_wear_armor(self, value: bool):
+        self.can_wear_armor = value
+        return self
 
     def construct(self, namespace: str) -> dict[str, str]:
         """
@@ -655,6 +702,7 @@ class Entity:
                     "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
                 },
                 "components": {
+                    "enable_attachables": self.can_wear_armor,
                     "spawn_egg": {
                         "texture": "spawn_egg",
                         "texture_index": 0
