@@ -104,7 +104,67 @@ class BlockSounds(enum.Enum):
     VINES = "vines"
     WOOD = "wood"
 
+# https://wiki.bedrock.dev/items/items-16.html#enchantable-slots
+class EnchantableSlot(enum.Enum):
+    ARMOR_FEET = "armor_feet"
+    ARMOR_TORSO = "armor_torso"
+    ARMOR_HEAD = "armor_head"
+    ARMOR_LEGS = "armor_legs"
+    AXE = "axe"
+    BOW = "bow"
+    COSMETIC_HEAD = "cosmetic_head"
+    CROSSBOW = "crossbow"
+    ELYTRA = "elytra"
+    FISHING_ROD = "fishing_rod"
+    FLINT_AND_STEEL = "flintsteel"
+    HOE = "hoe"
+    PICKAXE = "pickaxe"
+    SHEARS = "shears"
+    SHIELD = "shield"
+    SHOVEL = "shovel"
+    SWORD = "sword"
 
+# https://wiki.bedrock.dev/items/enchantments.html
+class Enchantments(enum.Enum):
+    SILK_TOUCH = "silk_touch"
+    FORTUNE = "fortune"
+    EFFICIENCY = "efficiency"
+    LUCK_OF_THE_SEA = "luck_of_the_sea"
+    LURE = "lure"
+    SHARPNESS = "sharpness"
+    SMITE	= "smite"
+    BANE_OF_ARTHROPODS = "bane_of_arthropods"
+    FIRE_ASPECT = "fire_aspect"
+    KNOCKBACK = "knockback"
+    LOOTING = "looting"
+    POWER = "power"
+    FLAME = "flame"
+    PUNCH = "punch"
+    INFINITY = "infinity"
+    MULTI_SHOT = "multishot"
+    PIERCING = "piercing"
+    QUICK_CHARGE = "quick_charge"
+    IMPALING = "impaling"
+    RIPTIDE = "riptide"
+    LOYALTY = "loyalty"
+    CHANNELING = "channeling"
+    PROTECTION = "protection"
+    PROJECTILE_PROTECTION =	"projectile_protection"
+    FIRE_PROTECTION = "fire_protection"
+    BLASH_PROTECTION = "blast_protection"
+    FEATHER_FALLING = "feather_falling"
+    THORNS = "thorns"
+    FROST_WALKER = "frost_walker"
+    RESPIRATION = "respiration"
+    AQUA_AFFINITY = "aqua_affinity"
+    CURSE_OF_BINDING = "curse_of_binding"
+    DEPTH_STRIDER = "depth_strider"
+    SOUL_SPEED = "soul_speed"
+    UNBREAKING = "unbreaking"
+    MENDING = "mending"
+    CURSE_OF_VANISHING = "curse_of_vanishing"
+
+# https://wiki.bedrock.dev/documentation/creative-categories.html
 class CreativeCategory(enum.Enum):
     """
     A enum consisting of the Bedrock Edition creative tabs
@@ -227,6 +287,9 @@ class Item:
 
     is_food: bool
     food_bars: int
+    
+    enchanted: bool
+    allow_off_hand: bool
 
     recipe: CraftingRecipeShaped | CraftingRecipeShapeless | None
 
@@ -240,6 +303,8 @@ class Item:
         self.max_stack_size = 64
         self.is_food = False
         self.food_bars = 0
+        self.enchanted = False
+        self.allow_off_hand = False
         self.recipe = None
 
     def set_id(self, item_id: str):
@@ -284,6 +349,20 @@ class Item:
         self.is_food = True
         self.food_bars = bars
         return self
+    
+    def set_enchanted(self):
+        '''
+        Makes the item look enchanted
+        '''
+        self.enchanted = True
+        return self
+    
+    def set_allow_off_hand(self):
+        """
+        Allow using the item in the offhand slot (False by default)
+        """
+        self.allow_off_hand = True
+        return self
 
     def set_recipe(self, recipe: CraftingRecipeShaped | CraftingRecipeShapeless):
         """
@@ -306,9 +385,11 @@ class Item:
                     "category": self.category.value,
                 },
                 "components": {
-                    "minecraft:icon": {"texture": f"{namespace}:{self.id}"},
                     "minecraft:display_name": {"value": self.display_name},
+                    "minecraft:icon": {"texture": f"{namespace}:{self.id}"},
                     "minecraft:max_stack_size": self.max_stack_size,
+                    "minecraft:foil": self.enchanted,
+                    "minecraft:hand_equipped": True
                 },
             },
         }
@@ -318,6 +399,7 @@ class Item:
             data["minecraft:item"]["components"]["minecraft:food"] = {
                 "nutrition": self.food_bars
             }
+            # TODO: allow using animation: drink 
             data["minecraft:item"]["components"]["minecraft:use_animation"] = "eat"
 
         return data
