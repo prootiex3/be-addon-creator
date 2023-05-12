@@ -18,7 +18,7 @@ FORMAT_VERSION_ITEM = "1.16.100"
 FORMAT_VERSION_BLOCK = "1.19.80"
 FORMAT_VERSION_BLOCK_SOUND = [1, 1, 0]
 FORMAT_VERSION_RECIPE = "1.17.41"
-FORMAT_VERSION_ENTITY = '???'
+FORMAT_VERSION_ENTITY = "1.8.0"
 MIN_ENGINE_VERSION = [1, 19, 0]
 GLOBAL_VERSION = [1, 0, 0]
 
@@ -212,7 +212,8 @@ class CraftingRecipeShapeless:
             },
         }
 
-
+# https://wiki.bedrock.dev/items/items-16.html
+# Requires Holiday Features Enabled (as of May 12th, 2023)
 class Item:
     """
     A minecraft bedrock item
@@ -317,16 +318,18 @@ class Item:
             data["minecraft:item"]["components"]["minecraft:food"] = {
                 "nutrition": self.food_bars
             }
+            data["minecraft:item"]["components"]["minecraft:use_animation"] = "eat"
 
         return data
 
-
+# https://wiki.bedrock.dev/blocks/blocks-stable.html#minecraft-material-instances
+# https://wiki.bedrock.dev/blocks/blocks-stable.html#additional-notes
 class RenderMethod(enum.Enum):
     BLEND = "blend"
     OPAQUE = "opaque"
     TRANSPARENT = "alpha_test"
 
-
+# https://wiki.bedrock.dev/blocks/blocks-stable.html
 class Block:
     """
     A minecraft bedrock block
@@ -456,7 +459,7 @@ class Block:
 
         return data
 
-
+# https://bedrock.dev/docs/stable/Entities
 class Entity:
     """
     A minecraft bedrock entity
@@ -473,10 +476,12 @@ class Entity:
         """
         data = {
             "format_version": FORMAT_VERSION_ENTITY,
-            "minecraft:entity": {
-                "components": {
-                    "identifier": f"{namespace}:{self.id}"
-                }
+            "minecraft:client_entity": {
+                "description": {
+                    "identifier": f"{namespace}:{self.id}",
+                    "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
+                },
+                "components": {}
             }
         }
         return data
