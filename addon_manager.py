@@ -18,6 +18,7 @@ FORMAT_VERSION_ITEM = "1.16.100"
 FORMAT_VERSION_BLOCK = "1.19.80"
 FORMAT_VERSION_BLOCK_SOUND = [1, 1, 0]
 FORMAT_VERSION_RECIPE = "1.17.41"
+FORMAT_VERSION_ENTITY = '???'
 MIN_ENGINE_VERSION = [1, 19, 0]
 GLOBAL_VERSION = [1, 0, 0]
 
@@ -176,17 +177,23 @@ class CraftingRecipeShapeless:
 
     item_id: str
     ingredients: list[RecipeIngredient]
+    result_item_id: str
 
     def __init__(self) -> None:
-        self.ingredients = []
         self.item_id = ""
+        self.ingredients = []
+        self.result_item_id = ""
+
+    def set_item_id(self, item_id: str):
+        self.item_id = item_id
+        return self
 
     def set_ingredients(self, ingredients: list[RecipeIngredient]):
         self.ingredients = ingredients
         return self
 
-    def set_item_id(self, item_id: str):
-        self.item_id = item_id
+    def set_result_item_id(self, result_item_id: str):
+        self.result_item_id = result_item_id
         return self
 
     def construct(self, namespace: str) -> dict:
@@ -201,7 +208,7 @@ class CraftingRecipeShapeless:
                 "ingredients": [
                     ingredient.construct() for ingredient in self.ingredients
                 ],
-                "result": {"item": f"{namespace}:{self.item_id}"},
+                "result": {"item": f"{namespace}:{self.result_item_id}"},
             },
         }
 
@@ -283,6 +290,7 @@ class Item:
         """
         self.recipe = recipe
         self.recipe.item_id = self.id
+        self.recipe.result_item_id = self.id
         return self
 
     def construct(self, namespace: str) -> dict:
@@ -411,6 +419,7 @@ class Block:
         """
         self.recipe = recipe
         self.recipe.item_id = self.id
+        self.recipe.result_item_id = self.id
         return self
 
     def construct(self, namespace: str) -> dict:
@@ -452,15 +461,24 @@ class Entity:
     """
     A minecraft bedrock entity
     """
+    
+    id: str
 
     def __init__(self) -> None:
-        pass
+        self.id = ""
 
     def construct(self, namespace: str) -> dict[str, str]:
         """
         Returns the entity json used inside a behaviour pack
         """
-        data = {}
+        data = {
+            "format_version": FORMAT_VERSION_ENTITY,
+            "minecraft:entity": {
+                "components": {
+                    "identifier": f"{namespace}:{self.id}"
+                }
+            }
+        }
         return data
 
 
@@ -509,6 +527,7 @@ class AddonManager:
 
         self.items: list[Item] = []
         self.blocks: list[Block] = []
+        self.recipes: list[CraftingRecipeShapeless | CraftingRecipeShaped] = []
         self.entities: list[Entity] = []
 
         self.initalize()
@@ -721,6 +740,15 @@ class AddonManager:
         self.blocks.append(block)
         return index
 
+    def add_recipe(self, recipe: CraftingRecipeShapeless | CraftingRecipeShaped):
+        """
+        Add a custom block to the addon using the Block class
+        """
+        debug(f"Adding recipe for item/block with id '{recipe.result_item_id}'")
+        index = len(self.recipes)
+        self.recipes.append(recipe)
+        return index
+
     def __real_initalize(self):
         rp_manifest = self.__setup_resources_manifest()
         self.__setup_behaviour_manifest(rp_manifest)
@@ -774,9 +802,14 @@ class AddonManager:
             block_data = block.construct(self.namespace)
             block_path.write_text(json.dumps(block_data, indent=4))
 
+    def __generate_recipes(self):
+        for recipe in self.recipes:
+            self.__generate_recipe(recipe)
+
     def generate(self):
         """
         Generate the files for the addon like items, blocks, recipes, etc...
         """
         self.__generate_items()
-        self.__generate_blocks()
+        self.__generate_blocks()        
+        self.__generate_recipes()

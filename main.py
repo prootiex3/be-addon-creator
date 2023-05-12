@@ -5,7 +5,7 @@ from addon_manager import (
     Item,
     Block,
     CreativeCategory,
-    RecipeShapeless,
+    CraftingRecipeShapeless,
     RecipeIngredient,
 )
 from util import error, OUT_DIRECTORY
@@ -85,7 +85,7 @@ def main():
         .set_hardness(1.5)
         .set_texture_path("textures/blocks/stone")
         .set_recipe(
-            recipe=RecipeShapeless().set_ingredients(
+            recipe=CraftingRecipeShapeless().set_ingredients(
                 [RecipeIngredient(item_id="minecraft:leather", count=9)]
             )
         )
