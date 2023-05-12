@@ -650,6 +650,7 @@ class Entity:
     """
     
     id: str
+    textures: dict[str, str]
     
     egg_should_use_texture: bool
     egg_texture_path: str | None
@@ -660,10 +661,13 @@ class Entity:
 
     def __init__(self) -> None:
         self.id = ""
+        self.textures = {"default":"textures/entity/steve"}
+        
         self.egg_should_use_texture = False
         self.egg_texture_path = None
         self.egg_base_color = "#"
         self.egg_overlay_color = "#"
+        
         self.can_wear_armor = True
         
     def set_id(self, entity_id: str):
@@ -701,11 +705,11 @@ class Entity:
                     "identifier": f"{namespace}:{self.id}",
                     "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
                     "materials": { "default": "player" },
+                    "textures": self.textures,
                     "geometry": {
                         "default": "geometry.player.v1.8"
                     },
-                    "render_controllers": [ "controller.render.player" ],
-                    
+                    "render_controllers": [ "controller.render.player" ],     
                     "enable_attachables": self.can_wear_armor,
                     "spawn_egg": {
                         "texture": "spawn_egg",
