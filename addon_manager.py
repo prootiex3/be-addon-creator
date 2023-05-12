@@ -186,6 +186,43 @@ class CreativeCategory(enum.Enum):
     NATURE = "Nature"
 
 
+# https://wiki.bedrock.dev/commands/damage.html#damage-cause-list
+class DamageSources(enum.Enum):
+    ANVIL = "anvil"
+    ATTACK = "attack"
+    BLOCK_EXPLOSION = "block_explosion"
+    CHARGING = "charging"
+    CONTACT = "contact"
+    DROWNING = "drowning"
+    ENTITY_ATTACK = "entity_attack"
+    ENTITY_EXPLOSION = "entity_explosion"
+    FALL = "fall"
+    FALLING_BLOCK = "falling_block"
+    FATAL = "fatal"
+    FIRE = "fire"
+    FIRE_TICK = "fire_tick"
+    FIREWORKS = "fireworks"
+    FLY_INTO_WALL = "fly_into_wall"
+    FREEZING = "freezing"
+    LAVA = "lava"
+    LIGHTING = "lightning"
+    MAGIC = "magic"
+    MAGMA = "magma"
+    NONE = "none"
+    OVERRIDE = "override"
+    PISTON = "piston"
+    PROJECTILE = "projectile"
+    SONIC_BOOM = "sonic_boom"
+    STALACITE = "stalactite"
+    STALAGMITE = "stalagmite"
+    STARVE = "starve"
+    SUFFOCATION = "suffocation"
+    SUICIDE = "suicide"
+    TEMPATURE = "temperature"
+    THORNS = "thorns"
+    VOID = "void"
+    WITHER = "wither"
+
 class CraftingRecipeShaped:
     """
     A minecraft bedrock shaped crafting recipe
@@ -600,6 +637,17 @@ class Entity:
             }
         }
         return data
+
+# https://wiki.bedrock.dev/world-generation/biomes.html#climates
+class BiomeClimate(enum.Enum):
+    '''
+    Allowed Minecraft Bedrock Climates used in the Biome class
+    '''
+    FROZEN = "frozen"
+    COLD = "cold"
+    MEDIUM = "medium"
+    LUKEWARM = "lukewarm"
+    WARM = "warm"
 
 # https://wiki.bedrock.dev/world-generation/biomes.html
 # According to ^, "As of 1.18, Custom Biomes are broken for Minecraft Bedrock"
