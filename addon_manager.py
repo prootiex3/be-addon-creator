@@ -610,9 +610,18 @@ class Entity:
     """
     
     id: str
+    
+    egg_should_use_texture: bool
+    egg_texture_path: str | None
+    egg_base_color: str
+    egg_overlay_color: str
 
     def __init__(self) -> None:
         self.id = ""
+        self.egg_should_use_texture = False
+        self.egg_texture_path = None
+        self.egg_base_color = "#"
+        self.egg_overlay_color = "#"
         
     def set_id(self, entity_id: str):
         """
@@ -621,6 +630,18 @@ class Entity:
         self.id = entity_id
         return self
     
+    def set_egg_use_texture(self, texture_path: str):
+        self.egg_should_use_texture = True
+        self.egg_texture_path = texture_path
+        return self
+    
+    def set_egg_base_color(self, hex_color: str):
+        self.egg_base_color = hex_color
+        return self
+    
+    def set_egg_overlay_color(self, hex_color: str):
+        self.egg_overlay_color = hex_color
+        return self
 
     def construct(self, namespace: str) -> dict[str, str]:
         """
@@ -633,7 +654,15 @@ class Entity:
                     "identifier": f"{namespace}:{self.id}",
                     "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
                 },
-                "components": {}
+                "components": {
+                    "spawn_egg": {
+                        "texture": "spawn_egg",
+                        "texture_index": 0
+                    } if self.egg_should_use_texture else {
+                        "base_color": self.egg_base_color,
+                        "overlay_color": self.egg_overlay_color
+                    } 
+                }
             }
         }
         return data
