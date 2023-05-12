@@ -628,7 +628,7 @@ class Biome:
             "format_version": FORMAT_VERSION_BIOME,
             "minecraft:biome": {
                 "description": {
-                    "identifier": f"{namespace}:{self.id}"
+                    "identifier": f"{namespace}_{self.id}"
                 },
                 "components": {}
             }
