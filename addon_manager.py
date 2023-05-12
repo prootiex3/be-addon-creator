@@ -26,6 +26,9 @@ GLOBAL_VERSION = [1, 0, 0]
 # https://wiki.bedrock.dev/blocks/block-sounds.html
 # Last updated for 1.19.80
 class BlockSounds(enum.Enum):
+    '''
+    Minecraft Bedrock Block Sounds
+    '''
     AMETHYST_BLOCK = "amethyst_block"
     AMETHYST_CLUSTER = "amethyst_cluster"
     ANCIENT_DEBRIS = "ancient_debris"
@@ -106,6 +109,9 @@ class BlockSounds(enum.Enum):
 
 # https://wiki.bedrock.dev/items/items-16.html#enchantable-slots
 class EnchantableSlot(enum.Enum):
+    '''
+    _
+    '''
     ARMOR_FEET = "armor_feet"
     ARMOR_TORSO = "armor_torso"
     ARMOR_HEAD = "armor_head"
@@ -126,6 +132,9 @@ class EnchantableSlot(enum.Enum):
 
 # https://wiki.bedrock.dev/items/enchantments.html
 class Enchantments(enum.Enum):
+    '''
+    Minecraft Bedrock Enchantments
+    '''
     SILK_TOUCH = "silk_touch"
     FORTUNE = "fortune"
     EFFICIENCY = "efficiency"
@@ -183,17 +192,32 @@ class CraftingRecipeShaped:
 
     item_id: str
     pattern: list[str]
+    result_item_id: str
 
     def __init__(self) -> None:
-        self.pattern = []
         self.item_id = ""
+        self.pattern = []
+        self.result_item_id = ""
+
+    def set_item_id(self, item_id: str):
+        '''
+        Set the item the recipe is being used for
+        '''
+        self.item_id = item_id
+        return self
 
     def set_pattern(self, pattern: list[str]):
+        '''
+        Set the shape of the recipe
+        '''
         self.pattern = pattern
         return self
 
-    def set_item_id(self, item_id: str):
-        self.item_id = item_id
+    def set_result_item_id(self, result_item_id: str):
+        '''
+        Set the result item of the recipe
+        '''
+        self.result_item_id = result_item_id
         return self
 
     def construct(self, namespace: str) -> dict:
