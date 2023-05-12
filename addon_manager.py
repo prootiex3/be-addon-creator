@@ -1,4 +1,8 @@
-import pathlib, json, uuid, shutil, enum
+import pathlib
+import json
+import uuid
+import shutil
+import enum
 from util import error, OUT_DIRECTORY
 
 DEBUG = True
@@ -109,6 +113,8 @@ class BlockSounds(enum.Enum):
     WOOD = "wood"
 
 # https://wiki.bedrock.dev/items/items-16.html#enchantable-slots
+
+
 class EnchantableSlot(enum.Enum):
     '''
     _
@@ -132,6 +138,8 @@ class EnchantableSlot(enum.Enum):
     SWORD = "sword"
 
 # https://wiki.bedrock.dev/items/enchantments.html
+
+
 class Enchantments(enum.Enum):
     '''
     Minecraft Bedrock Enchantments
@@ -142,7 +150,7 @@ class Enchantments(enum.Enum):
     LUCK_OF_THE_SEA = "luck_of_the_sea"
     LURE = "lure"
     SHARPNESS = "sharpness"
-    SMITE	= "smite"
+    SMITE = "smite"
     BANE_OF_ARTHROPODS = "bane_of_arthropods"
     FIRE_ASPECT = "fire_aspect"
     KNOCKBACK = "knockback"
@@ -159,7 +167,7 @@ class Enchantments(enum.Enum):
     LOYALTY = "loyalty"
     CHANNELING = "channeling"
     PROTECTION = "protection"
-    PROJECTILE_PROTECTION =	"projectile_protection"
+    PROJECTILE_PROTECTION = "projectile_protection"
     FIRE_PROTECTION = "fire_protection"
     BLASH_PROTECTION = "blast_protection"
     FEATHER_FALLING = "feather_falling"
@@ -175,6 +183,8 @@ class Enchantments(enum.Enum):
     CURSE_OF_VANISHING = "curse_of_vanishing"
 
 # https://wiki.bedrock.dev/documentation/creative-categories.html
+
+
 class CreativeCategory(enum.Enum):
     """
     A enum consisting of the Bedrock Edition creative tabs
@@ -222,6 +232,7 @@ class DamageSources(enum.Enum):
     THORNS = "thorns"
     VOID = "void"
     WITHER = "wither"
+
 
 class CraftingRecipeShaped:
     """
@@ -336,6 +347,8 @@ class CraftingRecipeShapeless:
 
 # https://wiki.bedrock.dev/items/items-16.html
 # Requires Holiday Features Enabled (as of May 12th, 2023)
+
+
 class Item:
     """
     A minecraft bedrock item
@@ -349,7 +362,7 @@ class Item:
 
     is_food: bool
     food_bars: int
-    
+
     enchanted: bool
     allow_off_hand: bool
 
@@ -411,14 +424,14 @@ class Item:
         self.is_food = True
         self.food_bars = bars
         return self
-    
+
     def set_enchanted(self):
         '''
         Makes the item look enchanted
         '''
         self.enchanted = True
         return self
-    
+
     def set_allow_off_hand(self):
         """
         Allow using the item in the offhand slot (False by default)
@@ -461,19 +474,23 @@ class Item:
             data["minecraft:item"]["components"]["minecraft:food"] = {
                 "nutrition": self.food_bars
             }
-            # TODO: allow using animation: drink 
+            # TODO: allow using animation: drink
             data["minecraft:item"]["components"]["minecraft:use_animation"] = "eat"
 
         return data
 
 # https://wiki.bedrock.dev/blocks/blocks-stable.html#minecraft-material-instances
 # https://wiki.bedrock.dev/blocks/blocks-stable.html#additional-notes
+
+
 class RenderMethod(enum.Enum):
     BLEND = "blend"
     OPAQUE = "opaque"
     TRANSPARENT = "alpha_test"
 
 # https://wiki.bedrock.dev/blocks/blocks-stable.html
+
+
 class Block:
     """
     A minecraft bedrock block
@@ -604,6 +621,8 @@ class Block:
         return data
 
 # https://bedrock.dev/docs/stable/Entities#Biome%20Tags
+
+
 class BiomeTags(enum.Enum):
     ANIMAL = "animal"
     BEACH = "beach"
@@ -644,52 +663,54 @@ class BiomeTags(enum.Enum):
     WARM = "warm"
 
 # https://bedrock.dev/docs/stable/Entities
+
+
 class Entity:
     """
     A minecraft bedrock entity
     """
-    
+
     id: str
     textures: dict[str, str]
-    
+
     egg_should_use_texture: bool
     egg_texture_path: str | None
     egg_base_color: str
     egg_overlay_color: str
-    
+
     can_wear_armor: bool
 
     def __init__(self) -> None:
         self.id = ""
-        self.textures = {"default":"textures/entity/steve"}
-        
+        self.textures = {"default": "textures/entity/steve"}
+
         self.egg_should_use_texture = False
         self.egg_texture_path = None
         self.egg_base_color = "#"
         self.egg_overlay_color = "#"
-        
+
         self.can_wear_armor = True
-        
+
     def set_id(self, entity_id: str):
         """
         Sets the entity's id
         """
         self.id = entity_id
         return self
-    
+
     def set_egg_use_texture(self, texture_path: str):
         self.egg_should_use_texture = True
         self.egg_texture_path = texture_path
         return self
-    
+
     def set_egg_base_color(self, hex_color: str):
         self.egg_base_color = hex_color
         return self
-    
+
     def set_egg_overlay_color(self, hex_color: str):
         self.egg_overlay_color = hex_color
         return self
-    
+
     def set_can_wear_armor(self, value: bool):
         self.can_wear_armor = value
         return self
@@ -704,14 +725,15 @@ class Entity:
                 "description": {
                     "identifier": f"{namespace}:{self.id}",
                     "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
-                    "materials": { "default": "entity_alphatest" },
+                    "materials": {"default": "entity_alphatest",
+                                  "animated": "player_animated", },
                     # entity_alphatest = player
                     "textures": self.textures,
                     "geometry": {
                         "default": "geometry.humanoid.custom"
-                    },                    
+                    },
                     "enable_attachables": self.can_wear_armor,
-                    "render_controllers": [ "controller.render.player" ],     
+                    "render_controllers": ["controller.render.player"],
                     "animations": {},
                     "spawn_egg": {
                         "texture": "spawn_egg",
@@ -719,13 +741,15 @@ class Entity:
                     } if self.egg_should_use_texture else {
                         "base_color": self.egg_base_color,
                         "overlay_color": self.egg_overlay_color
-                    } 
+                    }
                 }
             }
         }
         return data
 
 # https://wiki.bedrock.dev/world-generation/biomes.html#climates
+
+
 class BiomeClimate(enum.Enum):
     '''
     Allowed Minecraft Bedrock Climates used in the Biome class
@@ -738,23 +762,25 @@ class BiomeClimate(enum.Enum):
 
 # https://wiki.bedrock.dev/world-generation/biomes.html
 # According to ^, "As of 1.18, Custom Biomes are broken for Minecraft Bedrock"
+
+
 class Biome:
     '''
     A minecraft bedrock biome
     '''
-    
+
     id: str
-    
+
     def __init__(self) -> None:
         self.id = ""
-        
+
     def set_id(self, biome_id: str):
         """
         Sets the biomes id
         """
         self.id = biome_id
         return self
-    
+
     def construct(self, namespace: str) -> dict:
         """
         Returns the biomes json used inside a behaviour pack
@@ -768,6 +794,7 @@ class Biome:
                 "components": {}
             }
         }
+
 
 class AddonManager:
     """
@@ -913,7 +940,8 @@ class AddonManager:
         """
         # TODO: other languages?
         default_lang = "en_US"
-        debug(f"Writing '{key}' to language {default_lang} with value '{value}'")
+        debug(
+            f"Writing '{key}' to language {default_lang} with value '{value}'")
         lang_path = self.__ensure_file_or_folder_exists(
             path=self.resource_path.joinpath("texts"), is_folder=True
         )
@@ -964,14 +992,17 @@ class AddonManager:
         name = f"{self.namespace}:{block.id}"
         try:
             parsed = json.loads(blocks_resource_sounds_json_path.read_text())
-            parsed[name] = {"sound": block.sound.value, "textures": block.texture_path}
-            blocks_resource_sounds_json_path.write_text(json.dumps(parsed, indent=4))
+            parsed[name] = {"sound": block.sound.value,
+                            "textures": block.texture_path}
+            blocks_resource_sounds_json_path.write_text(
+                json.dumps(parsed, indent=4))
         except:
             data = {
                 "format_version": FORMAT_VERSION_BLOCK_SOUND,
                 name: {"sound": block.sound.value, "textures": name},
             }
-            blocks_resource_sounds_json_path.write_text(json.dumps(data, indent=4))
+            blocks_resource_sounds_json_path.write_text(
+                json.dumps(data, indent=4))
 
     def __write_block_texture(self, block: Block):
         """
@@ -1007,7 +1038,8 @@ class AddonManager:
                     indent=4,
                 )
             )
-        debug(f"Make sure to provide the texture for block with id '{block.id}'")
+        debug(
+            f"Make sure to provide the texture for block with id '{block.id}'")
 
     def add_item(self, item: Item):
         """
@@ -1031,7 +1063,8 @@ class AddonManager:
         """
         Add a custom block to the addon using the Block class
         """
-        debug(f"Adding recipe for item/block with id '{recipe.result_item_id}'")
+        debug(
+            f"Adding recipe for item/block with id '{recipe.result_item_id}'")
         index = len(self.recipes)
         self.recipes.append(recipe)
         return index
@@ -1056,7 +1089,8 @@ class AddonManager:
         if recipe is None:
             return
         recipe_json_path = self.__ensure_file_or_folder_exists(
-            path=self.behaviour_path.joinpath(f"recipes/{recipe.item_id}.json"),
+            path=self.behaviour_path.joinpath(
+                f"recipes/{recipe.item_id}.json"),
         )
         recipe_json_path.write_text(
             json.dumps(recipe.construct(self.namespace), indent=4)
@@ -1098,5 +1132,5 @@ class AddonManager:
         Generate the files for the addon like items, blocks, recipes, etc...
         """
         self.__generate_items()
-        self.__generate_blocks()        
+        self.__generate_blocks()
         self.__generate_recipes()
