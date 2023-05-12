@@ -700,8 +700,12 @@ class Entity:
                 "description": {
                     "identifier": f"{namespace}:{self.id}",
                     "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
-                },
-                "components": {
+                    "materials": { "default": "player" },
+                    "geometry": {
+                        "default": "geometry.player.v1.8"
+                    },
+                    "render_controllers": [ "controller.render.player" ],
+                    
                     "enable_attachables": self.can_wear_armor,
                     "spawn_egg": {
                         "texture": "spawn_egg",
