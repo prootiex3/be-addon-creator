@@ -621,6 +621,9 @@ class Biome:
         return self
     
     def construct(self, namespace: str) -> dict:
+        """
+        Returns the biomes json used inside a behaviour pack
+        """
         return {
             "format_version": FORMAT_VERSION_BIOME,
             "minecraft:biome": {
