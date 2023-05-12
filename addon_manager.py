@@ -18,7 +18,7 @@ FORMAT_VERSION_ITEM = "1.16.100"
 FORMAT_VERSION_BLOCK = "1.19.80"
 FORMAT_VERSION_BLOCK_SOUND = [1, 1, 0]
 FORMAT_VERSION_RECIPE = "1.17.41"
-FORMAT_VERSION_ENTITY = "1.8.0"
+FORMAT_VERSION_ENTITY = "1.10.0"
 FORMAT_VERSION_BIOME = "1.13.0"
 MIN_ENGINE_VERSION = [1, 19, 0]
 GLOBAL_VERSION = [1, 0, 0]
@@ -704,13 +704,15 @@ class Entity:
                 "description": {
                     "identifier": f"{namespace}:{self.id}",
                     "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
-                    "materials": { "default": "player" },
+                    "materials": { "default": "entity_alphatest" },
+                    # entity_alphatest = player
                     "textures": self.textures,
                     "geometry": {
-                        "default": "geometry.player.v1.8"
-                    },
-                    "render_controllers": [ "controller.render.player" ],     
+                        "default": "geometry.humanoid.custom"
+                    },                    
                     "enable_attachables": self.can_wear_armor,
+                    "render_controllers": [ "controller.render.player" ],     
+                    "animations": {},
                     "spawn_egg": {
                         "texture": "spawn_egg",
                         "texture_index": 0
