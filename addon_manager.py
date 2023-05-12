@@ -19,6 +19,7 @@ FORMAT_VERSION_BLOCK = "1.19.80"
 FORMAT_VERSION_BLOCK_SOUND = [1, 1, 0]
 FORMAT_VERSION_RECIPE = "1.17.41"
 FORMAT_VERSION_ENTITY = "1.8.0"
+FORMAT_VERSION_BIOME = "1.13.0"
 MIN_ENGINE_VERSION = [1, 19, 0]
 GLOBAL_VERSION = [1, 0, 0]
 
@@ -575,6 +576,14 @@ class Entity:
 
     def __init__(self) -> None:
         self.id = ""
+        
+    def set_id(self, entity_id: str):
+        """
+        Sets the entity's id
+        """
+        self.id = entity_id
+        return self
+    
 
     def construct(self, namespace: str) -> dict[str, str]:
         """
@@ -592,6 +601,35 @@ class Entity:
         }
         return data
 
+# https://wiki.bedrock.dev/world-generation/biomes.html
+# According to ^, "As of 1.18, Custom Biomes are broken for Minecraft Bedrock"
+class Biome:
+    '''
+    A minecraft bedrock biome
+    '''
+    
+    id: str
+    
+    def __init__(self) -> None:
+        self.id = ""
+        
+    def set_id(self, biome_id: str):
+        """
+        Sets the biomes id
+        """
+        self.id = biome_id
+        return self
+    
+    def construct(self, namespace: str) -> dict:
+        return {
+            "format_version": FORMAT_VERSION_BIOME,
+            "minecraft:biome": {
+                "description": {
+                    "identifier": f"{namespace}:{self.id}"
+                },
+                "components": {}
+            }
+        }
 
 class AddonManager:
     """
