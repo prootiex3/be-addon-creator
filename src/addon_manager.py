@@ -3,7 +3,7 @@ import json
 import uuid
 import shutil
 import enum
-from .util import error, debug, OUT_DIRECTORY
+from .util import error, debug, OUT_DIRECTORY # If you have a linter/pylint, it will show this as a error but it works and I don't know how to remove the error
 
 
 # TODO: maybe make these editable?
