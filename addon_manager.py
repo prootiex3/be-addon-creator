@@ -22,7 +22,8 @@ FORMAT_VERSION_ITEM = "1.16.100"
 FORMAT_VERSION_BLOCK = "1.19.80"
 FORMAT_VERSION_BLOCK_SOUND = [1, 1, 0]
 FORMAT_VERSION_RECIPE = "1.17.41"
-FORMAT_VERSION_ENTITY = "1.10.0"
+FORMAT_VERSION_ENTITY = "1.12.0"
+FORMAT_VERSION_ENTITY_CLIENT = "1.10.0"
 FORMAT_VERSION_BIOME = "1.13.0"
 MIN_ENGINE_VERSION = [1, 19, 0]
 GLOBAL_VERSION = [1, 0, 0]
@@ -31,9 +32,10 @@ GLOBAL_VERSION = [1, 0, 0]
 # https://wiki.bedrock.dev/blocks/block-sounds.html
 # Last updated for 1.19.80
 class BlockSounds(enum.Enum):
-    '''
+    """
     Minecraft Bedrock Block Sounds
-    '''
+    """
+
     AMETHYST_BLOCK = "amethyst_block"
     AMETHYST_CLUSTER = "amethyst_cluster"
     ANCIENT_DEBRIS = "ancient_debris"
@@ -112,13 +114,15 @@ class BlockSounds(enum.Enum):
     VINES = "vines"
     WOOD = "wood"
 
+
 # https://wiki.bedrock.dev/items/items-16.html#enchantable-slots
 
 
 class EnchantableSlot(enum.Enum):
-    '''
+    """
     _
-    '''
+    """
+
     ARMOR_FEET = "armor_feet"
     ARMOR_TORSO = "armor_torso"
     ARMOR_HEAD = "armor_head"
@@ -137,13 +141,15 @@ class EnchantableSlot(enum.Enum):
     SHOVEL = "shovel"
     SWORD = "sword"
 
+
 # https://wiki.bedrock.dev/items/enchantments.html
 
 
 class Enchantments(enum.Enum):
-    '''
+    """
     Minecraft Bedrock Enchantments
-    '''
+    """
+
     SILK_TOUCH = "silk_touch"
     FORTUNE = "fortune"
     EFFICIENCY = "efficiency"
@@ -181,6 +187,7 @@ class Enchantments(enum.Enum):
     UNBREAKING = "unbreaking"
     MENDING = "mending"
     CURSE_OF_VANISHING = "curse_of_vanishing"
+
 
 # https://wiki.bedrock.dev/documentation/creative-categories.html
 
@@ -249,23 +256,23 @@ class CraftingRecipeShaped:
         self.result_item_id = ""
 
     def set_item_id(self, item_id: str):
-        '''
+        """
         Set the item the recipe is being used for
-        '''
+        """
         self.item_id = item_id
         return self
 
     def set_pattern(self, pattern: list[str]):
-        '''
+        """
         Set the shape of the recipe
-        '''
+        """
         self.pattern = pattern
         return self
 
     def set_result_item_id(self, result_item_id: str):
-        '''
+        """
         Set the result item of the recipe
-        '''
+        """
         self.result_item_id = result_item_id
         return self
 
@@ -295,8 +302,12 @@ class RecipeIngredient:
     item_id: str
     count: int
 
-    def __init__(self, item_id: str, count: int) -> None:
+    def __init__(self, item_id: str, count: int = 1) -> None:
         self.item_id = item_id
+        if count <= 0:
+            raise Exception(
+                "RecipeIngredients must have a greater or equal to 1 count."
+            )
         self.count = count
 
     def construct(self) -> dict:
@@ -345,6 +356,7 @@ class CraftingRecipeShapeless:
             },
         }
 
+
 # https://wiki.bedrock.dev/items/items-16.html
 # Requires Holiday Features Enabled (as of May 12th, 2023)
 
@@ -359,9 +371,11 @@ class Item:
     texture_path: str | None
     category: CreativeCategory
     max_stack_size: int
+    will_despawn: bool
 
     is_food: bool
     food_bars: int
+    use_duration: int | float
 
     enchanted: bool
     allow_off_hand: bool
@@ -376,10 +390,15 @@ class Item:
         )
         self.category = CreativeCategory.CONSTRUCTION
         self.max_stack_size = 64
+        self.will_despawn = True
+
         self.is_food = False
         self.food_bars = 0
+        self.use_duration = 5
+
         self.enchanted = False
         self.allow_off_hand = False
+
         self.recipe = None
 
     def set_id(self, item_id: str):
@@ -417,6 +436,13 @@ class Item:
         self.max_stack_size = max_stack_size
         return self
 
+    def set_will_despawn(self, should_despawn: bool):
+        """
+        Set if the item should/will despawn
+        """
+        self.will_despawn = should_despawn
+        return self
+
     def set_food(self, bars: int):
         """
         Sets is_food on the item and sets the value for the food consumption (food_bars)
@@ -425,10 +451,17 @@ class Item:
         self.food_bars = bars
         return self
 
+    def set_use_duration(self, seconds: int | float):
+        """
+        Sets how many seconds it takes to eat the food (Only applies if item is a food)
+        """
+        self.use_duration = seconds
+        return self
+
     def set_enchanted(self):
-        '''
+        """
         Makes the item look enchanted
-        '''
+        """
         self.enchanted = True
         return self
 
@@ -464,20 +497,32 @@ class Item:
                     "minecraft:icon": {"texture": f"{namespace}:{self.id}"},
                     "minecraft:max_stack_size": self.max_stack_size,
                     "minecraft:foil": self.enchanted,
-                    "minecraft:hand_equipped": True
+                    "minecraft:hand_equipped": True,
+                    "minecraft:should_despawn": self.will_despawn,
                 },
             },
         }
 
         if self.is_food:
-            data["minecraft:item"]["components"]["minecraft:use_duration"] = 32
+            data["minecraft:item"]["components"][
+                "minecraft:use_duration"
+            ] = self.use_duration
             data["minecraft:item"]["components"]["minecraft:food"] = {
                 "nutrition": self.food_bars
             }
             # TODO: allow using animation: drink
             data["minecraft:item"]["components"]["minecraft:use_animation"] = "eat"
+            # TODO: figure out how to use this/make it look like an apple as base?
+            data["minecraft:item"]["components"]["minecraft:render_offsets"] = {
+                "main_hand": {
+                    "position": [1, 1, 1],
+                    "rotation": [1, 1, 1],
+                    "scale": [1, 1, 1],
+                }
+            }
 
         return data
+
 
 # https://wiki.bedrock.dev/blocks/blocks-stable.html#minecraft-material-instances
 # https://wiki.bedrock.dev/blocks/blocks-stable.html#additional-notes
@@ -487,6 +532,7 @@ class RenderMethod(enum.Enum):
     BLEND = "blend"
     OPAQUE = "opaque"
     TRANSPARENT = "alpha_test"
+
 
 # https://wiki.bedrock.dev/blocks/blocks-stable.html
 
@@ -505,6 +551,7 @@ class Block:
     hardness: int | float
     resistance: int
     render_method: RenderMethod
+    has_gravity: bool
 
     recipe: CraftingRecipeShaped | CraftingRecipeShapeless | None
 
@@ -519,6 +566,7 @@ class Block:
         self.hardness = 1
         self.resistance = 1
         self.render_method = RenderMethod.BLEND
+        self.has_gravity = False
         self.recipe = None
 
     def set_id(self, block_id: str):
@@ -577,6 +625,10 @@ class Block:
         self.render_method = render_method
         return self
 
+    def set_has_gravity(self, has_gravity: bool = True):
+        self.has_gravity = has_gravity
+        return self
+
     def set_recipe(self, recipe: CraftingRecipeShaped | CraftingRecipeShapeless):
         """
         Sets the recipe for the block
@@ -590,7 +642,7 @@ class Block:
         """
         Returns the block json used inside a behaviour pack
         """
-        data = {
+        return {
             "format_version": FORMAT_VERSION_BLOCK,
             "minecraft:block": {
                 "description": {
@@ -618,7 +670,6 @@ class Block:
             },
         }
 
-        return data
 
 # https://bedrock.dev/docs/stable/Entities#Biome%20Tags
 
@@ -662,6 +713,7 @@ class BiomeTags(enum.Enum):
     THE_END = "the_end"
     WARM = "warm"
 
+
 # https://bedrock.dev/docs/stable/Entities
 
 
@@ -671,6 +723,7 @@ class Entity:
     """
 
     id: str
+    name: str
     textures: dict[str, str]
 
     egg_should_use_texture: bool
@@ -682,12 +735,13 @@ class Entity:
 
     def __init__(self) -> None:
         self.id = ""
+        self.name = ""
         self.textures = {"default": "textures/entity/steve"}
 
         self.egg_should_use_texture = False
         self.egg_texture_path = None
-        self.egg_base_color = "#"
-        self.egg_overlay_color = "#"
+        self.egg_base_color = "#000000"
+        self.egg_overlay_color = "#ffff00"
 
         self.can_wear_armor = True
 
@@ -696,6 +750,13 @@ class Entity:
         Sets the entity's id
         """
         self.id = entity_id
+        return self
+
+    def set_name(self, name: str):
+        """
+        Sets the entity's name
+        """
+        self.name = name
         return self
 
     def set_egg_use_texture(self, texture_path: str):
@@ -711,63 +772,87 @@ class Entity:
         self.egg_overlay_color = hex_color
         return self
 
-    def set_can_wear_armor(self, value: bool):
+    def set_can_wear_armor(self, value: bool = True):
         self.can_wear_armor = value
         return self
 
-    def construct(self, namespace: str) -> dict[str, str]:
+    # Entity
+    def construct_behaviour(self, namespace: str) -> dict:
+        return {
+            "format_version": FORMAT_VERSION_ENTITY,
+            "minecraft:entity": {
+                "description": {
+                    "identifier": f"{namespace}:{self.id}",
+                    "is_spawnable": True,
+                    "is_summonable": True,
+                },
+                "components": {
+                    "minecraft:type_family": {"family": ["player"]},
+                    "minecraft:collision_box": {"width": 0.6, "height": 1.8},
+                },
+            },
+        }
+
+    # Client Entity
+    def construct_resource(self, namespace: str) -> dict[str, str]:
         """
         Returns the entity json used inside a behaviour pack
         """
-        data = {
-            "format_version": FORMAT_VERSION_ENTITY,
+        return {
+            "format_version": FORMAT_VERSION_ENTITY_CLIENT,
             "minecraft:client_entity": {
                 "description": {
                     "identifier": f"{namespace}:{self.id}",
-                    "min_engine_version": '.'.join(MIN_ENGINE_VERSION),
-                    "materials": {"default": "entity_alphatest",
-                                  "animated": "player_animated", },
+                    "min_engine_version": ".".join([f"{i}" for i in MIN_ENGINE_VERSION]),  # type: ignore
+                    "materials": {"default": "player"},
                     # entity_alphatest = player
                     "textures": self.textures,
-                    "geometry": {
-                        "default": "geometry.humanoid.custom"
-                    },
                     "enable_attachables": self.can_wear_armor,
-                    "render_controllers": ["controller.render.player"],
-                    "animations": {},
-                    "spawn_egg": {
-                        "texture": "spawn_egg",
-                        "texture_index": 0
-                    } if self.egg_should_use_texture else {
+                    "geometry": {"default": "geometry.pig.v1.8"},
+                    "animations": {
+                        "walk": "animation.quadruped.walk",
+                        "look_at_target": "animation.common.look_at_target",
+                    },
+                    "animation_controllers": [
+                        {"setup": "controller.animation.pig.setup"},
+                        {"move": "controller.animation.pig.move"},
+                        {"baby": "controller.animation.pig.baby"},
+                    ],
+                    "render_controllers": ["controller.render.default"],
+                    "spawn_egg": {"texture": "spawn_egg", "texture_index": 0}
+                    if self.egg_should_use_texture
+                    else {
                         "base_color": self.egg_base_color,
-                        "overlay_color": self.egg_overlay_color
-                    }
+                        "overlay_color": self.egg_overlay_color,
+                    },
                 }
-            }
+            },
         }
-        return data
+
 
 # https://wiki.bedrock.dev/world-generation/biomes.html#climates
 
 
 class BiomeClimate(enum.Enum):
-    '''
+    """
     Allowed Minecraft Bedrock Climates used in the Biome class
-    '''
+    """
+
     FROZEN = "frozen"
     COLD = "cold"
     MEDIUM = "medium"
     LUKEWARM = "lukewarm"
     WARM = "warm"
 
+
 # https://wiki.bedrock.dev/world-generation/biomes.html
 # According to ^, "As of 1.18, Custom Biomes are broken for Minecraft Bedrock"
 
 
 class Biome:
-    '''
+    """
     A minecraft bedrock biome
-    '''
+    """
 
     id: str
 
@@ -788,11 +873,9 @@ class Biome:
         return {
             "format_version": FORMAT_VERSION_BIOME,
             "minecraft:biome": {
-                "description": {
-                    "identifier": f"{namespace}_{self.id}"
-                },
-                "components": {}
-            }
+                "description": {"identifier": f"{namespace}_{self.id}"},
+                "components": {},
+            },
         }
 
 
@@ -808,16 +891,16 @@ class AddonManager:
         self.clean()
 
         self.name = name
+        self.namespace = (
+            "_".join(self.name.lower().split(" ")) if namespace is None else namespace
+        )
         self.description = description
 
-        technical_name = "_".join(self.name.lower().split(" "))
-        self.namespace = technical_name if namespace is None else namespace
-
         self.behaviour_path = self.__ensure_file_or_folder_exists(
-            path=OUT_DIRECTORY.joinpath(f"{technical_name}_behaviour"), is_folder=True
+            path=OUT_DIRECTORY.joinpath(f"{self.namespace}_behaviour"), is_folder=True
         )
         self.resource_path = self.__ensure_file_or_folder_exists(
-            path=OUT_DIRECTORY.joinpath(f"{technical_name}_resources"), is_folder=True
+            path=OUT_DIRECTORY.joinpath(f"{self.namespace}_resources"), is_folder=True
         )
 
         self.items_behaviour_path = self.__ensure_file_or_folder_exists(
@@ -839,10 +922,19 @@ class AddonManager:
             path=self.behaviour_path.joinpath("recipes"), is_folder=True
         )
 
+        self.entities_behaviour_path = self.__ensure_file_or_folder_exists(
+            path=self.behaviour_path.joinpath("entities"), is_folder=True
+        )
+
+        self.entities_resource_path = self.__ensure_file_or_folder_exists(
+            path=self.resource_path.joinpath("entity"), is_folder=True
+        )
+
         self.items: list[Item] = []
         self.blocks: list[Block] = []
         self.recipes: list[CraftingRecipeShapeless | CraftingRecipeShaped] = []
         self.entities: list[Entity] = []
+        self.biomes: list[Biome] = []
 
         self.initalize()
 
@@ -940,8 +1032,7 @@ class AddonManager:
         """
         # TODO: other languages?
         default_lang = "en_US"
-        debug(
-            f"Writing '{key}' to language {default_lang} with value '{value}'")
+        debug(f"Writing '{key}' to language {default_lang} with value '{value}'")
         lang_path = self.__ensure_file_or_folder_exists(
             path=self.resource_path.joinpath("texts"), is_folder=True
         )
@@ -992,17 +1083,14 @@ class AddonManager:
         name = f"{self.namespace}:{block.id}"
         try:
             parsed = json.loads(blocks_resource_sounds_json_path.read_text())
-            parsed[name] = {"sound": block.sound.value,
-                            "textures": block.texture_path}
-            blocks_resource_sounds_json_path.write_text(
-                json.dumps(parsed, indent=4))
+            parsed[name] = {"sound": block.sound.value, "textures": name}
+            blocks_resource_sounds_json_path.write_text(json.dumps(parsed, indent=4))
         except:
             data = {
                 "format_version": FORMAT_VERSION_BLOCK_SOUND,
                 name: {"sound": block.sound.value, "textures": name},
             }
-            blocks_resource_sounds_json_path.write_text(
-                json.dumps(data, indent=4))
+            blocks_resource_sounds_json_path.write_text(json.dumps(data, indent=4))
 
     def __write_block_texture(self, block: Block):
         """
@@ -1038,8 +1126,7 @@ class AddonManager:
                     indent=4,
                 )
             )
-        debug(
-            f"Make sure to provide the texture for block with id '{block.id}'")
+        debug(f"Make sure to provide the texture for block with id '{block.id}'")
 
     def add_item(self, item: Item):
         """
@@ -1050,6 +1137,14 @@ class AddonManager:
         self.items.append(item)
         return index
 
+    def add_items(self, items: list[Item]):
+        """
+        Add a list of custom items to the addon using an array of Item classes
+        """
+        for item in items:
+            self.add_item(item)
+        return len(self.items)
+
     def add_block(self, block: Block):
         """
         Add a custom block to the addon using the Block class
@@ -1059,14 +1154,30 @@ class AddonManager:
         self.blocks.append(block)
         return index
 
+    def add_blocks(self, blocks: list[Block]):
+        """
+        Add a list of custom blocks to the addon using an array of Block classes
+        """
+        for block in blocks:
+            self.add_block(block)
+        return len(self.blocks)
+
     def add_recipe(self, recipe: CraftingRecipeShapeless | CraftingRecipeShaped):
         """
-        Add a custom block to the addon using the Block class
+        Add a custom recipe to the addon using the Recipe class
         """
-        debug(
-            f"Adding recipe for item/block with id '{recipe.result_item_id}'")
+        debug(f"Adding recipe for item/block with id '{recipe.result_item_id}'")
         index = len(self.recipes)
         self.recipes.append(recipe)
+        return index
+
+    def add_entity(self, entity: Entity):
+        """
+        Add a custom entity to the addon using the Entity class
+        """
+        debug(f"Adding entity with id '{entity.id}'")
+        index = len(self.entities)
+        self.entities.append(entity)
         return index
 
     def __real_initalize(self):
@@ -1089,8 +1200,7 @@ class AddonManager:
         if recipe is None:
             return
         recipe_json_path = self.__ensure_file_or_folder_exists(
-            path=self.behaviour_path.joinpath(
-                f"recipes/{recipe.item_id}.json"),
+            path=self.behaviour_path.joinpath(f"recipes/{recipe.item_id}.json"),
         )
         recipe_json_path.write_text(
             json.dumps(recipe.construct(self.namespace), indent=4)
@@ -1127,6 +1237,28 @@ class AddonManager:
         for recipe in self.recipes:
             self.__generate_recipe(recipe)
 
+    def __generate_entities(self):
+        for entity in self.entities:
+            # For the resource pack
+            entity_path_resource = self.__ensure_file_or_folder_exists(
+                path=self.entities_resource_path.joinpath(f"{entity.id}.entity.json")
+            )
+            entity_data_resource = entity.construct_resource(self.namespace)
+            entity_path_resource.write_text(json.dumps(entity_data_resource, indent=4))
+            # For the behaviour pack
+            entity_path_behaviour = self.__ensure_file_or_folder_exists(
+                path=self.entities_behaviour_path.joinpath(f"{entity.id}.json")
+            )
+            entity_data_behaviour = entity.construct_behaviour(self.namespace)
+            entity_path_behaviour.write_text(
+                json.dumps(entity_data_behaviour, indent=4)
+            )
+            # Name the spawn egg
+            self.__write_to_lang(
+                key=f"item.spawn_egg.entity.{self.namespace}:{entity.id}.name",
+                value=f"{entity.name} Spawn Egg",
+            )
+
     def generate(self):
         """
         Generate the files for the addon like items, blocks, recipes, etc...
@@ -1134,3 +1266,4 @@ class AddonManager:
         self.__generate_items()
         self.__generate_blocks()
         self.__generate_recipes()
+        self.__generate_entities()
