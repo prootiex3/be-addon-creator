@@ -3,15 +3,7 @@ import json
 import uuid
 import shutil
 import enum
-from .util import error, OUT_DIRECTORY
-
-DEBUG = True
-def debug(message: str):
-    """
-    DEBUG
-    """
-    if DEBUG:
-        print(f"DEBUG: {message}")
+from .util import error, debug, OUT_DIRECTORY
 
 
 # TODO: maybe make these editable?
