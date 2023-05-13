@@ -1,6 +1,5 @@
 import json
-import pathlib
-from addon_manager import (
+from src.addon_manager import (
     AddonManager,
     Item,
     Block,
@@ -8,7 +7,7 @@ from addon_manager import (
     CraftingRecipeShapeless,
     RecipeIngredient,
 )
-from util import error, OUT_DIRECTORY
+from src.util import error, OUT_DIRECTORY, DEFAULTS_PATH
 
 
 def main():
@@ -23,23 +22,22 @@ def main():
         "WARNING: If you continue, any files in './out' will be erased! (Enter to continue)"
     )
 
-    defaults_path = pathlib.Path("./defaults.json")
-    if not defaults_path.exists():
-        name = input("Name of your addon (has default): ")
-        description = input("Description of your addon (has default): ")
+    name = "Template Addon"
+    description = "A bedrock addon created using sammwi's AddonManager!"
+    namespace = "template_addon"
+
+    if not DEFAULTS_PATH.exists() and not DEFAULTS_PATH.suffix == ".json":
+        print(
+            "Couldn't find defaults in current folder, proceeding with hardcoded defaults..."
+        )
     else:
         print("Found defaults in current folder, proceeding...")
-        name = "Template Addon"
-        description = "A bedrock addon created using sammwi's AddonManager!"
-        try:
-            parsed = dict(json.loads(s=defaults_path.read_text(encoding="utf-8")))
-            name = parsed.get("name", name)
-            description = parsed.get("description", description)
-            print("Failed to use defaults, using local defaults instead...\n")
-        except:
-            print("Failed to use defaults, using local defaults instead...\n")
+        parsed = dict(json.loads(s=DEFAULTS_PATH.read_text(encoding="utf-8")))
+        name = parsed.get("name", name)
+        description = parsed.get("description", description)
+        namespace = parsed.get("namespace", namespace)
 
-    manager = AddonManager(name, description)
+    manager = AddonManager(name, description, namespace)
 
     manager.add_item(
         item=Item()
