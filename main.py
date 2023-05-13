@@ -3,7 +3,7 @@ from src.addon_manager import AddonManager
 from src.creative_category import CreativeCategory
 from src.item import Item
 from src.block import Block
-from src.recipes import CraftingRecipeShapeless, RecipeIngredient
+from src.recipe import CraftingRecipeShapeless, RecipeIngredient
 from src.util import error, OUT_DIRECTORY, DEFAULTS_PATH
 
 def main():

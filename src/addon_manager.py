@@ -9,8 +9,7 @@ from .item import Item
 from .block import Block
 from .entity import Entity
 from .biome import Biome
-from .recipes import CraftingRecipeShapeless, CraftingRecipeShaped
-
+from .recipe import CraftingRecipeShapeless, CraftingRecipeShaped
 
 class AddonManager:
     """

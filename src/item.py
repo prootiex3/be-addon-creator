@@ -1,7 +1,7 @@
 # If you have a linter/pylint, it will show these as errors but it works and I don't know how to remove the error
 from .constants import FORMAT_VERSION_ITEM
 from .creative_category import CreativeCategory
-from .recipes import CraftingRecipeShapeless, CraftingRecipeShaped
+from .recipe import CraftingRecipeShapeless, CraftingRecipeShaped
 
 # https://wiki.bedrock.dev/items/items-16.html
 # Requires Holiday Features Enabled (as of May 12th, 2023)

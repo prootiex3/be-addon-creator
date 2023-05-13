@@ -2,7 +2,7 @@ import enum
 # If you have a linter/pylint, it will show these as errors but it works and I don't know how to remove the error
 from .constants import FORMAT_VERSION_BLOCK
 from .creative_category import CreativeCategory
-from .recipes import CraftingRecipeShapeless, CraftingRecipeShaped
+from .recipe import CraftingRecipeShapeless, CraftingRecipeShaped
 
 # https://wiki.bedrock.dev/blocks/block-sounds.html
 # Last updated for 1.19.80
