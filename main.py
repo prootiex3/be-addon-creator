@@ -1,14 +1,10 @@
 import json
-from src.addon_manager import (
-    AddonManager,
-    Item,
-    Block,
-    CreativeCategory,
-    CraftingRecipeShapeless,
-    RecipeIngredient,
-)
+from src.addon_manager import AddonManager
+from src.creative_category import CreativeCategory
+from src.item import Item
+from src.block import Block
+from src.recipes import CraftingRecipeShapeless, RecipeIngredient
 from src.util import error, OUT_DIRECTORY, DEFAULTS_PATH
-
 
 def main():
     if not OUT_DIRECTORY.exists():
